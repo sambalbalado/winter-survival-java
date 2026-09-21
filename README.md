@@ -8,7 +8,7 @@ A terminal-based, turn-driven Java survival game in which an explorer manages wa
 
 Winter Survival is an open-ended survival sandbox played on a 40-by-10 snow map. Every interactive player turn consumes one warmth and one hydration point. The player must use limited supplies, collect food produced by trees, avoid poisonous berries, and decide whether nearby wildlife should be fought or tamed.
 
-The implementation is organised around small actions, capability interfaces, composable NPC behaviours, and engine extension points. The game-specific code builds on a supplied object-oriented console engine; the ownership boundary is documented in [ATTRIBUTION.md](ATTRIBUTION.md).
+The implementation is organised around small actions, capability interfaces, composable NPC behaviours, and engine extension points. The game-specific implementation is by Esaam Matudin and builds on a supplied Java game engine created by Riordan Alfredo and Adrian Kristanto. Further provenance is recorded in [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## Gameplay
 
