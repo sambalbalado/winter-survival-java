@@ -1,45 +1,53 @@
 package game.items;
 
+import edu.monash.fit2099.engine.actions.ActionList;
 import edu.monash.fit2099.engine.actors.Actor;
 import edu.monash.fit2099.engine.actors.attributes.BaseAttributes;
 import edu.monash.fit2099.engine.items.Item;
-import edu.monash.fit2099.engine.actions.ActionList;
 import edu.monash.fit2099.engine.positions.GameMap;
-import game.actions.EatAction;
-import game.capabilities.Eatable;
+import game.actions.ConsumeAction;
+import game.app.Abilities;
 
 /**
- * A poisonous Yew Berry that kills the actor who eats it.
- * <p>
- * When consumed, the Yew Berry immediately reduces the actor's health
- * to zero, resulting in instant death.
- * </p>
+ * A dangerous consumable berry that causes fatal damage when consumed.
  *
- * @author Esaam Matudin
+ * @author Taabish Farooq Bhat
  * @version 1.0
  */
-public class YewBerry extends Item implements Eatable {
+public class YewBerry extends Item implements Consumable {
 
     /**
-     * Constructor for Yew Berry.
-     * Sets the display character and enables FOOD status.
+     * Constructs a YewBerry.
      */
     public YewBerry() {
-        super("Yew Berry", 'x', true); // 'x' represents Yew Berry
-        this.enableAbility(Status.FOOD);
+        super("Yew Berry", 'x', true);
+        this.enableAbility(Abilities.EAT_FRUIT);
+        this.enableAbility(Abilities.CAN_COAT_WEAPONS);
     }
 
+    /**
+     * Consumes the yew berry, dealing damage equal to the actor's current health.
+     *
+     * @param actor the actor consuming the yew berry
+     */
     @Override
-    public ActionList allowableActions(Actor actor, GameMap map) {
-        ActionList actions = super.allowableActions(actor, map);
-        actions.add(new EatAction(this));
-        return actions;
-    }
-
-    @Override
-    public String eatenBy(Actor actor) {
-        actor.removeItemFromInventory(this);
+    public void consume(Actor actor) {
         actor.hurt(actor.getAttribute(BaseAttributes.HEALTH));
-        return actor + " eats the Yew Berry and dies instantly!";
+    }
+
+    /**
+     * Returns available actions for this yew berry.
+     *
+     * @param actor the actor performing the action
+     * @param gameMap the game map
+     * @return list of allowable actions
+     */
+    @Override
+    public ActionList allowableActions(Actor actor, GameMap gameMap) {
+        ActionList actions = super.allowableActions(actor, gameMap);
+        if (actor.hasAbility(Abilities.CAN_CONSUME)) {
+            actions.add(new ConsumeAction(this, this));
+        }
+        return actions;
     }
 }

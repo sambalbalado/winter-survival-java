@@ -7,7 +7,6 @@ import edu.monash.fit2099.engine.actors.Behaviour;
 import edu.monash.fit2099.engine.positions.Exit;
 import edu.monash.fit2099.engine.positions.GameMap;
 import edu.monash.fit2099.engine.positions.Location;
-import game.capabilities.Tamable;
 
 /**
  * A behaviour that makes a tamable actor follow its owner.
@@ -15,8 +14,7 @@ import game.capabilities.Tamable;
  * The actor will move one step closer to its owner each turn if possible.
  * </p>
  *
- * @author Riordan D. Alfredo (original supplied follow behaviour)
- * @author Esaam Matudin (tamable-owner adaptation)
+ * @author Esaam Matudin
  * @version 2.5
  */
 public class FollowBehaviour implements Behaviour {
@@ -42,13 +40,11 @@ public class FollowBehaviour implements Behaviour {
      */
     @Override
     public Action generateAction(Actor actor, GameMap map) {
-        Actor owner = animal.getOwner();
-        if (owner == null || !map.contains(owner) || !map.contains(actor)) {
+        if (!map.contains(animal.getOwner()) || !map.contains(actor))
             return null;
-        }
 
         Location here = map.locationOf(actor);
-        Location there = map.locationOf(owner);
+        Location there = map.locationOf(animal.getOwner());
 
         int currentDistance = distance(here, there);
         for (Exit exit : here.getExits()) {

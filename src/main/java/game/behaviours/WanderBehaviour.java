@@ -17,8 +17,7 @@ import java.util.Random;
  * that it can enter. If no locations are available, the actor will stay in place.
  * </p>
  *
- * @author Riordan D. Alfredo (original supplied wander behaviour)
- * @author Esaam Matudin (game adaptation and documentation)
+ * @author Esaam Matudin
  * @version 1.8
  */
 public class WanderBehaviour implements Behaviour {

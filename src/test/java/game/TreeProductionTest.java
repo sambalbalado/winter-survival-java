@@ -7,22 +7,25 @@ import edu.monash.fit2099.engine.positions.Location;
 import game.items.Apple;
 import game.items.Hazelnut;
 import game.items.YewBerry;
-import game.trees.AppleTree;
-import game.trees.HazelnutTree;
-import game.trees.YewBerryTree;
+import game.flora.WildAppleTree;
+import game.flora.Stage;
+import game.environment.Snow;
+import game.flora.HazelnutTree;
+import game.flora.YewBerryTree;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/** Mature-tree regression checks retained from the earlier portfolio. */
 class TreeProductionTest {
 
     @Test
     void appleTreeProducesOneAppleEveryThreeTurns() throws Exception {
         GameMap map = snowMap();
         Location treeLocation = map.at(1, 1);
-        treeLocation.setGround(new AppleTree());
+        treeLocation.setGround(new WildAppleTree(Stage.TREE));
 
         tick(treeLocation, 3);
 
@@ -44,7 +47,7 @@ class TreeProductionTest {
     void yewTreeProducesOneBerryEveryFiveTurns() throws Exception {
         GameMap map = snowMap();
         Location treeLocation = map.at(1, 1);
-        treeLocation.setGround(new YewBerryTree());
+        treeLocation.setGround(new YewBerryTree(Stage.TREE));
 
         tick(treeLocation, 5);
 
@@ -54,7 +57,7 @@ class TreeProductionTest {
     private GameMap snowMap() throws Exception {
         DefaultGroundCreator groundCreator = new DefaultGroundCreator();
         groundCreator.registerGround('.', Snow::new);
-        return new GameMap("Test", groundCreator, List.of("...", "...", "..."));
+        return new GameMap("Forest", groundCreator, List.of("...", "...", "..."));
     }
 
     private void tick(Location location, int turns) {

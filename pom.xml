@@ -8,7 +8,7 @@
     <artifactId>winter-survival-java</artifactId>
     <version>1.0.0</version>
     <name>Winter Survival</name>
-    <description>A terminal-based Java survival game with modular actions, behaviours, and entity capabilities.</description>
+    <description>A four-person Java survival sandbox with composable tree behaviours, crafting, morphing, and multiple maps.</description>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -18,9 +18,25 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -50,7 +66,9 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>game.Application</mainClass>
+                            <mainClass>game.app.Application</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>dependency/</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>

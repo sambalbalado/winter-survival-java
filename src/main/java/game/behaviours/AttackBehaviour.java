@@ -7,7 +7,7 @@ import edu.monash.fit2099.engine.positions.Exit;
 import edu.monash.fit2099.engine.positions.GameMap;
 import edu.monash.fit2099.engine.positions.Location;
 import game.actions.AttackAction;
-import game.capabilities.Tamable;
+import game.app.Abilities;
 
 /**
  * A behaviour that makes a {@link Tamable} actor attack any valid adjacent actor.
@@ -22,7 +22,7 @@ import game.capabilities.Tamable;
 public class AttackBehaviour implements Behaviour {
 
     /** The tamable actor this behaviour belongs to. */
-    private final Tamable animal;
+    private Tamable animal;
 
     /**
      * Constructor.
@@ -47,6 +47,11 @@ public class AttackBehaviour implements Behaviour {
      */
     @Override
     public Action generateAction(Actor actor, GameMap map) {
+
+        if (actor.hasAbility(Abilities.DOCILE)) {
+            return null;
+        }
+
         Location here = map.locationOf(actor);
 
         // Check all surrounding locations

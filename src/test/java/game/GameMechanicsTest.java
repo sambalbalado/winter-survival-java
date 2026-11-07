@@ -2,9 +2,17 @@ package game;
 
 import edu.monash.fit2099.engine.actors.attributes.ActorAttributeOperation;
 import edu.monash.fit2099.engine.actors.attributes.BaseAttributes;
+import edu.monash.fit2099.engine.positions.DefaultGroundCreator;
+import edu.monash.fit2099.engine.positions.GameMap;
+import edu.monash.fit2099.engine.positions.World;
+import edu.monash.fit2099.engine.displays.Display;
+import game.environment.Snow;
+import java.util.List;
 import game.actions.TameAction;
-import game.actors.Bear;
-import game.actors.Player;
+import game.actions.ConsumeAction;
+import game.app.Abilities;
+import game.creatures.Bear;
+import game.characters.Player;
 import game.items.Apple;
 import game.items.Bottle;
 import game.items.Hazelnut;
@@ -16,42 +24,49 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Regression checks retained from the earlier portfolio and adapted to the team APIs. */
 class GameMechanicsTest {
 
     @Test
     void appleRestoresHealthAndHydrationThenLeavesInventory() {
-        Player player = new Player("Explorer", '@', 100);
+        Player player = new Player();
         Apple apple = new Apple();
         player.addItemToInventory(apple);
         player.hurt(10);
-        player.modifyAttribute(GameAttributes.HYDRATION, ActorAttributeOperation.DECREASE, 5);
+        player.modifyAttribute(Player.ExplorerAttributes.HYDRATION, ActorAttributeOperation.DECREASE, 5);
 
-        apple.eatenBy(player);
+        new ConsumeAction(apple, apple).execute(player, null);
 
-        assertEquals(93, player.getAttribute(BaseAttributes.HEALTH));
-        assertEquals(17, player.getAttribute(GameAttributes.HYDRATION));
+        assertEquals(993, player.getAttribute(BaseAttributes.HEALTH));
+        assertEquals(997, player.getAttribute(Player.ExplorerAttributes.HYDRATION));
         assertFalse(player.getItemInventory().contains(apple));
     }
 
     @Test
     void hazelnutIncreasesMaximumHealth() {
-        Player player = new Player("Explorer", '@', 100);
+        Player player = new Player();
         Hazelnut hazelnut = new Hazelnut();
         player.addItemToInventory(hazelnut);
 
-        hazelnut.eatenBy(player);
+        new ConsumeAction(hazelnut, hazelnut).execute(player, null);
 
-        assertEquals(101, player.getMaximumAttribute(BaseAttributes.HEALTH));
+        assertEquals(1001, player.getMaximumAttribute(BaseAttributes.HEALTH));
         assertFalse(player.getItemInventory().contains(hazelnut));
     }
 
     @Test
-    void yewBerryIsConsumedAndKnocksActorOut() {
-        Player player = new Player("Explorer", '@', 100);
+    void yewBerryIsConsumedAndKnocksActorOut() throws Exception {
+        Player player = new Player();
         YewBerry berry = new YewBerry();
         player.addItemToInventory(berry);
 
-        berry.eatenBy(player);
+        DefaultGroundCreator groundCreator = new DefaultGroundCreator();
+        groundCreator.registerGround('.', Snow::new);
+        GameMap map = new GameMap("Forest", groundCreator, List.of("..."));
+        World world = new World(new Display()) {};
+        world.addGameMap(map);
+        world.addPlayer(player, map.at(1, 0));
+        new ConsumeAction(berry, berry).execute(player, map);
 
         assertEquals(0, player.getAttribute(BaseAttributes.HEALTH));
         assertFalse(player.getItemInventory().contains(berry));
@@ -60,23 +75,23 @@ class GameMechanicsTest {
 
     @Test
     void bottleHasFiveHydrationUses() {
-        Player player = new Player("Explorer", '@', 100);
-        Bottle bottle = new Bottle("Bottle", 'o', true);
-        player.modifyAttribute(GameAttributes.HYDRATION, ActorAttributeOperation.DECREASE, 20);
+        Player player = new Player();
+        Bottle bottle = new Bottle();
+        player.modifyAttribute(Player.ExplorerAttributes.HYDRATION, ActorAttributeOperation.DECREASE, 20);
 
         for (int i = 0; i < 5; i++) {
             bottle.drunkBy(player);
         }
         String emptyResult = bottle.drunkBy(player);
 
-        assertEquals(20, player.getAttribute(GameAttributes.HYDRATION));
-        assertTrue(emptyResult.contains("empty"));
+        assertEquals(1000, player.getAttribute(Player.ExplorerAttributes.HYDRATION));
+        assertTrue(emptyResult.toLowerCase().contains("empty"));
     }
 
     @Test
     void tamingConsumesFoodAndAssignsOwner() {
-        Player player = new Player("Explorer", '@', 100);
-        Bear bear = new Bear("Bear", 'B', 200);
+        Player player = new Player();
+        Bear bear = new Bear();
         Apple apple = new Apple();
         player.addItemToInventory(apple);
 

@@ -6,14 +6,15 @@ import edu.monash.fit2099.engine.actors.Behaviour;
 import edu.monash.fit2099.engine.positions.Exit;
 import edu.monash.fit2099.engine.positions.GameMap;
 import edu.monash.fit2099.engine.positions.Location;
-import game.Abilities;
+import game.app.Abilities;
 import game.actions.AttackAction;
-import game.capabilities.Tamable;
+
 
 /**
  * A behaviour that makes a tamed animal protect its owner.
  * <p>
- * The animal will attack any adjacent actor that has the {@code PREDATOR} ability.
+ * The animal will attack any adjacent actor that has the {@code PREDATOR} ability
+ * or any actor that is threatening its owner.
  * </p>
  *
  * @author Esaam Matudin

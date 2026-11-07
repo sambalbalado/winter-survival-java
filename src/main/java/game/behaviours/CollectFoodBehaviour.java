@@ -4,12 +4,12 @@ import edu.monash.fit2099.engine.actions.Action;
 import edu.monash.fit2099.engine.actors.Actor;
 import edu.monash.fit2099.engine.actors.Behaviour;
 import edu.monash.fit2099.engine.items.Item;
+import edu.monash.fit2099.engine.items.PickUpAction;
 import edu.monash.fit2099.engine.positions.Exit;
 import edu.monash.fit2099.engine.positions.GameMap;
 import edu.monash.fit2099.engine.positions.Location;
 import edu.monash.fit2099.engine.actions.MoveActorAction;
-import game.capabilities.Tamable;
-import game.items.Status;
+import game.app.Abilities;
 
 /**
  * A behaviour that allows a tamable actor (like a Deer) to collect food.
@@ -61,27 +61,15 @@ public class CollectFoodBehaviour implements Behaviour {
         // Pick up food on the same tile
         if (!inventoryFull) {
             for (Item item : here.getItems()) {
-                if (item.hasAbility(Status.FOOD)) {
-                    return new Action() {
-                        @Override
-                        public String execute(Actor actor, GameMap map) {
-                            here.removeItem(item);
-                            actor.addItemToInventory(item);
-                            return actor + " picked up " + item;
-                        }
-
-                        @Override
-                        public String menuDescription(Actor actor) {
-                            return "Pick up " + item;
-                        }
-                    };
+                if (item.hasAbility(Abilities.EAT_FRUIT)) {
+                    return new PickUpAction(item);
                 }
             }
 
             // Move toward any food in nearby locations (radius 10)
             for (Location loc : here.getNearbyLocations(10)) {
                 for (Item item : loc.getItems()) {
-                    if (item.hasAbility(Status.FOOD)) {
+                    if (item.hasAbility(Abilities.EAT_FRUIT)) {
                         // Move one step toward this food if possible
                         int currentDistance = distance(here, loc);
                         for (Exit exit : here.getExits()) {

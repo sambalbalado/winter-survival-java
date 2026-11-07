@@ -1,169 +1,83 @@
 # Winter Survival
 
-A terminal-based, turn-driven Java survival game in which an explorer manages warmth and hydration, forages renewable resources, fights wildlife, and tames animal companions.
+A terminal-based Java survival sandbox developed by a **team of four**. Explore two maps, forage growing trees, tame wildlife, craft elemental potions, and experiment with animal forms.
 
-![Winter Survival terminal gameplay](docs/images/gameplay.png)
+This portfolio incorporates our team's later game. **Esaam Matudin's contribution is identified below; the complete game and supplied engine are not solo work.**
 
-## Overview
+![Terminal output captured from the team build](docs/images/team-gameplay.svg)
 
-Winter Survival is an open-ended survival sandbox played on a 40-by-10 snow map. Every interactive player turn consumes one warmth and one hydration point. The player must use limited supplies, collect food produced by trees, avoid poisonous berries, and decide whether nearby wildlife should be fought or tamed.
+## Gameplay and team features
 
-The implementation is organised around small actions, capability interfaces, composable NPC behaviours, and engine extension points. The game-specific implementation is by Esaam Matudin and builds on a supplied Java game engine created by Riordan Alfredo and Adrian Kristanto. Further provenance is recorded in [ATTRIBUTION.md](ATTRIBUTION.md).
+- **Connected environments:** Forest and Plains, with teleport doors, circles, and a portable teleport cube.
+- **Survival and companions:** health, hydration, warmth, consumables, weapons, taming, and priority-based animal behaviours.
+- **Growing flora:** apple/yew trees change growth stages and produce fruit according to stage and map; hazelnut trees remain a separate resource.
+- **Spawning ecosystem:** terrain-driven wildlife, crocodiles, poison, and post-spawn effects.
+- **Creative mode:** toggle through the action menu to access potion brewing and Wolf, Bear, or Dragon player forms.
+- **Lunar effects:** phases affect wolves and special berries. The HTTP adapter attempts to fetch a starting phase and falls back to NORMAL if unavailable. Successful live astronomy data is not required to play and was not verified for this update.
 
-## Gameplay
+The team version starts with 1,000 health, hydration, and warmth. It is an experimental sandbox with no scripted victory condition. See [known limitations](docs/validation.md#known-limitations).
 
-The Explorer begins with 100 health, 30 warmth, 20 hydration, a five-use bottle, and a bedroll. The game continues until the Explorer is removed from the world after health, warmth, or hydration reaches zero. There is no scripted victory condition.
+## My Contributions
 
-During a run, the player can:
+**Esaam Matudin — flora implementation, design, testing, and integration.** Verified against authored commits and source:
 
-- Move in eight directions and wait.
-- Attack adjacent animals with an intrinsic weapon.
-- Pick up, drop, eat, and drink items.
-- Drop the bedroll and sleep for a randomly selected six to ten rounds.
-- Tame a deer, wolf, or bear by offering one carried food item.
-- Use tamed companions' specialised behaviour: following, protection, or food collection.
+- Implemented apple/yew tree growth and map-specific fruit-production rules for Forest and Plains.
+- Introduced `TreeBehaviour.perform(Tree, Location)` and a `TreeMap<Integer, TreeBehaviour>` in abstract `Tree`. Growth and fruit-drop behaviours execute in ascending priority order on each tick.
+- Added **35 JUnit/Mockito test methods** across `WildAppleTreeTest` and `YewBerryTreeTest`, covering initial stages, growth timing, map rules, and production intervals. This is a method count, not a coverage percentage or a claim that every assertion is strong.
+- Authored the flora UML/design rationale, maintained Javadocs, and merged the flora branch into the shared codebase.
 
-## Key features
+The interface separates ticking from individual operations. Map-name checks and stage branches remain in concrete behaviours, so new biomes require edits. [Design discussion](docs/design/flora.md) · [Evidence and teammate credits](ATTRIBUTION.md)
 
-- **Survival attributes:** health, warmth, and hydration determine whether the player remains conscious.
-- **Turn-based action system:** the world builds a context-sensitive action list from movement, inventory, terrain, nearby actors, and ground items.
-- **Wildlife AI:** animals select reusable behaviours from a priority-ordered map.
-- **Companion system:** all three animals implement a shared `Tamable` contract; wolves and bears can defend their owner, while deer can gather and deliver food.
-- **Renewable ecosystem:** apple, hazelnut, and yew trees create items on independent turn schedules.
-- **Typed interactions:** `Eatable`, `Drinkable`, `Sleepable`, and `Tamable` decouple actions from concrete domain classes.
-- **Automated verification:** JUnit tests cover consumables, hydration limits, taming state, and tree production intervals.
+## Technology
 
-## Architecture
+Java 17 source target, Maven, JUnit Jupiter, Mockito, OkHttp, and org.json. The supplied engine provides the world loop, maps, actor/item abstractions, action menus, and inventory/attribute infrastructure.
 
-`Application` creates an `Earth` world, which configures one `GameMap` and its actors and terrain. The supplied `World` loop ticks the map, draws it, asks each actor to select an `Action`, executes that action, and records it for possible multi-turn continuation.
+## Build, test, and run
 
-```mermaid
-flowchart LR
-    Application --> Earth
-    Earth --> World[Supplied World loop]
-    World --> GameMap
-    World --> ActionList
-    ActionList --> Player
-    ActionList --> Animals[Deer / Wolf / Bear]
-    Player --> Action
-    Animals --> Behaviour
-    Behaviour --> Action
-    Action --> GameMap
-    GameMap --> Actors
-    GameMap --> Items
-    GameMap --> Trees
-```
-
-See [Architecture](docs/architecture.md) for the turn sequence, package responsibilities, and a focused UML class diagram.
-
-## Object-oriented design
-
-- **Abstraction:** engine abstractions such as `Actor`, `Action`, `Item`, `Ground`, and `World` define stable extension points for game types.
-- **Inheritance:** concrete actors, actions, items, weapons, trees, and terrain reuse those engine contracts.
-- **Interface-driven polymorphism:** actions depend on `Eatable`, `Drinkable`, `Sleepable`, or `Tamable`, so interaction logic is not tied to a single item or animal class.
-- **Composition:** each animal owns a priority-ordered set of `Behaviour` objects instead of placing all AI decisions in the actor class.
-- **Encapsulation:** actors control their attributes and inventory; callers receive unmodifiable views rather than direct mutable collections.
-
-## Design patterns
-
-| Pattern | Participants | Why it is useful |
-| --- | --- | --- |
-| Command | `Action`, `AttackAction`, `EatAction`, `DrinkAction`, `SleepAction`, `TameAction` | Represents player and NPC decisions as executable objects that can be listed, selected, and continued across turns. |
-| Strategy | `Behaviour` with `AttackBehaviour`, `FollowBehaviour`, `ProtectOwnerBehaviour`, `CollectFoodBehaviour`, and `WanderBehaviour` | Lets animals combine reusable decision policies and change priorities without a single monolithic AI method. |
-| Factory (supplied engine) | `GroundCreator`, `DefaultGroundCreator`, `Snow` supplier registration | Converts map symbols into terrain instances without hard-coding concrete ground construction into `GameMap`. |
-
-The project does not claim formal State or Observer implementations; taming is represented by ordinary object state and ownership references.
-
-## UML and architecture documentation
-
-The project includes a deliberately scoped UML class diagram that models the four main gameplay areas: survival equipment, wildlife behaviours and combat, renewable food sources, and taming/companions. It demonstrates practical class-diagram skills including inheritance, interface realisation, composition, and dependency relationships without reproducing every engine class.
-
-## Project structure
-
-```text
-winter-survival-java/
-├── README.md
-├── ATTRIBUTION.md
-├── pom.xml
-├── docs/
-│   ├── architecture.md
-│   ├── interview-guide.md
-│   └── images/gameplay.png
-└── src/
-    ├── main/java/
-    │   ├── game/                         # Game-specific implementation
-    │   │   ├── actions/
-    │   │   ├── actors/
-    │   │   ├── behaviours/
-    │   │   ├── capabilities/
-    │   │   ├── items/
-    │   │   ├── trees/
-    │   │   └── weapons/
-    │   └── edu/monash/fit2099/engine/    # Supplied engine; attribution preserved
-    └── test/java/game/                   # JUnit gameplay tests
-```
-
-## Tech stack
-
-- Java 17+
-- Maven 3.9+
-- JUnit Jupiter 5
-- Mermaid for architecture and UML documentation
-
-## Getting started
-
-### Prerequisites
-
-- JDK 17 or newer
-- Maven 3.9 or newer
-
-### Build and test
+Install **JDK 17+** and **Maven 3.9+**. Use an interactive UTF-8 terminal; the player and some terrain use Unicode glyphs.
 
 ```bash
-mvn clean test
+git clone https://github.com/sambalbalado/winter-survival-java.git
+cd winter-survival-java
+mvn clean verify
 ```
 
-### Run
+Prepare runtime libraries and launch:
 
 ```bash
-mvn package
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.7.1:copy-dependencies -DincludeScope=runtime
 java -jar target/winter-survival-java-1.0.0.jar
 ```
 
-These commands have been verified on OpenJDK 23 and Maven 3.9.11. The project compiles against Java 17.
+Or use `./scripts/run.sh` to build, copy runtime libraries, and launch. Maven needs network access on the first run. Keep `target/dependency/` beside the JAR; it is not self-contained. In an IDE, import `pom.xml` and run `game.app.Application` with standard input connected.
 
-## Controls
+### Controls
 
-Movement uses numeric-keypad directions, entered as a number followed by Return:
+Enter the displayed key followed by Return. Movement uses 8 north, 2 south, 4 west, 6 east; 7/9/1/3 diagonally; 5 waits. Other actions receive dynamic letter keys. Use `>` and `<` for menu pages. Choose **Enable Creative Mode** to reveal morphing options; its key can change. Stop with Ctrl+C.
 
-```text
-7 8 9    north-west  north  north-east
-4 5 6    west        wait   east
-1 2 3    south-west  south  south-east
-```
+## Tests and validation
 
-Other available actions receive letter keys dynamically. The menu describes the exact action, such as drinking, attacking, picking up an item, dropping equipment, sleeping, eating, or taming an animal.
+`mvn clean verify` runs **117 tests**: 109 imported team tests and eight adapted regression checks retained from the earlier portfolio. The two original flora test classes account for 35 methods. Sources are under `src/test/java/game/`. Unit tests use service test doubles rather than live HTTP calls.
 
-## Engineering highlights
+See [validation notes](docs/validation.md) for local results, runtime checks, runtime dependency setup, and remaining issues.
 
-- Modelled four gameplay areas with focused UML class diagrams and translated those relationships into Java abstractions.
-- Extended a reusable engine through inheritance and interfaces while keeping gameplay rules in the `game` package.
-- Used dependency inversion in interaction actions: for example, `EatAction` depends on `Eatable`, while `TameAction` and companion behaviours depend on `Tamable`.
-- Composed NPC decision-making from small behaviour objects with deterministic priority ordering.
-- Added a repeatable Maven build and eight automated tests around the highest-value domain rules.
-- Preserved third-party/supplied authorship instead of presenting engine code as original work.
+## Structure and design
 
-## Current limitations and future improvements
+| Path | Responsibility |
+| --- | --- |
+| `game/flora`, `behaviours/TreeBehaviour.java` | Growth stages and ordered tree operations |
+| `game/creatures`, `spawning`, `grounds` | Wildlife, terrain, spawning, crafting tables |
+| `game/actions`, `items`, `potions`, `status` | Commands, inventory, effects, crafting |
+| `game/characters`, `monsters`, `teleport`, `api`, `lunar` | Player forms, monsters, transport, lunar systems |
+| `edu/monash/fit2099/engine` | Supplied engine; original notices preserved |
+| `docs/design` | Original team UML and reviewed rationale summaries |
 
-- Add an explicit objective, score, or turn-based survival milestone; the current loop is intentionally open-ended.
-- Add a warming interaction so warmth management has an active recovery path beyond chained sleep pausing player resource decay.
-- Extract repeated taming state and behaviour-selection code shared by `Bear`, `Wolf`, and `Deer` without forcing unrelated animals into an inflexible hierarchy.
-- Replace greedy Manhattan movement with obstacle-aware pathfinding on more complex maps.
-- Inject random-number sources and timing so combat and sleep are fully deterministic in tests.
-- Add end-to-end tests for interactive menu flows.
+Paths above are relative to `src/main/java/` unless stated otherwise.
 
-## Author
+[Architecture](docs/architecture.md) · [Team systems](docs/design/team-systems.md) · [Interview guide](docs/interview-guide.md) · [Migration](docs/migration.md)
 
-**Esaam Matudin**
+## Team and provenance
 
-For interview-ready explanations of the implementation, see [Project interview guide](docs/interview-guide.md).
+**Esaam Matudin, Sai Sann Thet Lone, Taiyo Arima, and Taabish Farooq Bhat.** Engine: **Riordan Alfredo and Adrian Kristanto**. See [ATTRIBUTION.md](ATTRIBUTION.md) for ownership, original source, AI-assistance acknowledgement, and distribution status.
+
+The earlier individual version remains in Git history. Its documentation and gameplay image are retained, clearly labelled, in `docs/archive/` and `docs/images/individual-gameplay.png`.
