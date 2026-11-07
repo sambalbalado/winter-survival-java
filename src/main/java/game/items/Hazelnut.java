@@ -6,41 +6,50 @@ import edu.monash.fit2099.engine.actors.attributes.ActorAttributeOperation;
 import edu.monash.fit2099.engine.actors.attributes.BaseAttributes;
 import edu.monash.fit2099.engine.items.Item;
 import edu.monash.fit2099.engine.positions.GameMap;
-import game.actions.EatAction;
-import game.capabilities.Eatable;
+import game.actions.ConsumeAction;
+import game.app.Abilities;
 
 /**
- * Represents a Hazelnut that can be consumed by an actor.
- * <p>
- * Eating a Hazelnut increases the actor's maximum health by 1.
- * </p>
+ * A consumable hazelnut that permanently increases maximum health.
  *
- * @author Esaam Matudin
+ * @author Taabish Farooq Bhat
  * @version 1.0
  */
-public class Hazelnut extends Item implements Eatable {
+public class Hazelnut extends Item implements Consumable {
 
     /**
-     * Constructor for Hazelnut.
-     * Sets the name, display character, portability, and marks it as food.
+     * Constructs a Hazelnut.
      */
     public Hazelnut() {
-        super("Hazelnut", 'n', true);  // 'n' is the display character
-        this.enableAbility(Status.FOOD);
+        super("Hazelnut", 'n', true);
+        this.enableAbility(Abilities.EAT_FRUIT);
+
+
     }
 
+    /**
+     * Consumes the hazelnut, permanently increasing the actor's maximum health by 1.
+     *
+     * @param actor the actor consuming the hazelnut
+     */
     @Override
-    public ActionList allowableActions(Actor actor, GameMap map) {
-        ActionList actions = super.allowableActions(actor, map);
-        actions.add(new EatAction(this));
+    public void consume(Actor actor) {
+        actor.modifyStatsMaximum(BaseAttributes.HEALTH, ActorAttributeOperation.INCREASE, 1);
+    }
+
+    /**
+     * Returns available actions for this hazelnut.
+     *
+     * @param actor the actor performing the action
+     * @param gameMap the game map
+     * @return list of allowable actions
+     */
+    @Override
+    public ActionList allowableActions(Actor actor, GameMap gameMap) {
+        ActionList actions = super.allowableActions(actor, gameMap);
+        if (actor.hasAbility(Abilities.CAN_CONSUME)) {
+            actions.add(new ConsumeAction(this, this));
+        }
         return actions;
-    }
-
-    @Override
-    public String eatenBy(Actor actor) {
-        actor.removeItemFromInventory(this);
-        actor.modifyStatsMaximum(BaseAttributes.HEALTH,
-                ActorAttributeOperation.INCREASE, 1); // increase max health by 1
-        return actor + " eats the hazelnut and feels stronger!";
     }
 }

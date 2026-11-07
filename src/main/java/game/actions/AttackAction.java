@@ -6,59 +6,73 @@ import edu.monash.fit2099.engine.positions.GameMap;
 import edu.monash.fit2099.engine.weapons.Weapon;
 
 /**
- * An action that allows an actor to attack another actor.
- * The attack can be performed using an intrinsic weapon or a specified weapon.
+ * Fixed AttackAction that safely uses intrinsic weapons
+ * without trying to move the attacker into the target.
+
+ * This action represents a combat attack between two actors, where one actor
+ * (the attacker) attempts to deal damage to another actor (the target) using
+ * either a specified weapon or their intrinsic weapon. The action handles
+ * both weapon-based and intrinsic weapon attacks, and automatically processes
+ * the consequences if the target becomes unconscious.
  *
- * @author Adrian Kristanto (original supplied demo implementation)
- * @author Esaam Matudin (game adaptation and documentation)
- * @version 1.3
+ * Based on the AttackAction class from the FIT2099 demo project.
+ * @author Adrian Kristanto (original implementation)
+ * @author Taabish Farooq Bhat (Adapted for current implementation)
+ * @version 1.0
  */
 public class AttackAction extends Action {
 
-    /** The actor that is to be attacked. */
-    private final Actor target;
+    private Actor target;
+    private String direction;
+    private Weapon weapons;
 
-    /** The direction of the target (for display purposes). */
-    private final String direction;
-
-    /** The weapon used for the attack. */
-    private final Weapon weapon;
 
     /**
-     * Constructor with a specified weapon.
+     * Constructor for creating an AttackAction with a specific weapon.
      *
-     * @param target    the actor to attack
-     * @param direction the direction of the target
-     * @param weapon    the weapon to use
+     * @param target the Actor to be attacked
+     * @param direction the direction string indicating the target's location relative to the attacker
+     * @param weapons the Weapon to be used for the attack
      */
-    public AttackAction(Actor target, String direction, Weapon weapon) {
+    public AttackAction(Actor target, String direction, Weapon weapons) {
         this.target = target;
         this.direction = direction;
-        this.weapon = weapon;
+        this.weapons = weapons;
     }
 
     /**
-     * Constructor that defaults to the attacker's intrinsic weapon.
+     * Constructor for creating an AttackAction using the actor's intrinsic weapon.
+     * The weapon will be determined during execution by calling the actor's getIntrinsicWeapon() method.
      *
-     * @param target    the actor to attack
-     * @param direction the direction of the target
+     * @param target the Actor to be attacked
+     * @param direction the direction string indicating the target's location relative to the attacker
      */
     public AttackAction(Actor target, String direction) {
-        this(target, direction, null);
+        this.target = target;
+        this.direction = direction;
     }
 
     /**
-     * Executes the attack.
-     * If no weapon is specified, the attacker's intrinsic weapon is used.
+     * Executes the attack action.
      *
-     * @param actor the actor performing the attack
-     * @param map   the current game map
-     * @return a string describing the result of the attack
+     * If no weapon was specified in the constructor, this method will use the actor's
+     * intrinsic weapon. The attack is performed using the weapon's attack method,
+     * and if the target becomes unconscious as a result, the target's unconscious
+     * method is called to handle the consequences.
+     *
+     * @param actor the Actor performing the attack
+     * @param map the GameMap where the action takes place
+     * @return a String describing the result of the attack, including any consequences
+     *         if the target becomes unconscious
      */
     @Override
     public String execute(Actor actor, GameMap map) {
-        Weapon attackWeapon = weapon != null ? weapon : actor.getIntrinsicWeapon();
-        String result = attackWeapon.attack(actor, target, map);
+        if (weapons == null) {
+            weapons = actor.getIntrinsicWeapon();
+        }
+
+        String result = weapons.attack(actor, target, map);
+
         if (!target.isConscious()) {
             result += "\n" + target.unconscious(actor, map);
         }
@@ -67,14 +81,17 @@ public class AttackAction extends Action {
     }
 
     /**
-     * Describes this attack action in the menu.
+     * Returns a description of this action suitable for display in a menu.
      *
-     * @param actor the actor performing the action
-     * @return a string describing the attack
+     * The description includes the attacker, target, direction, and weapon being used.
+     * If no specific weapon was provided, it will display "Intrinsic Weapon".
+     *
+     * @param actor the Actor who would perform this action
+     * @return a String describing the action in a user-friendly format
      */
     @Override
     public String menuDescription(Actor actor) {
-        return actor + " attacks " + target + " at " + direction + " with " +
-                (weapon != null ? weapon : "Intrinsic Weapon");
+        return actor + " attacks " + target + " at " + direction +
+                (weapons != null ? " with " + weapons.getClass().getSimpleName() : "");
     }
 }

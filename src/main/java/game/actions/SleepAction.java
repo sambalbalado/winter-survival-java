@@ -3,60 +3,95 @@ package game.actions;
 import edu.monash.fit2099.engine.actions.Action;
 import edu.monash.fit2099.engine.actors.Actor;
 import edu.monash.fit2099.engine.positions.GameMap;
-import game.capabilities.Sleepable;
+import game.items.Sleepable;
+
+import java.util.Random;
 
 /**
- * An action that allows an actor to sleep on a {@link Sleepable} source.
- * The action executes the sleeping behavior of the source and may be repeated if
- * the actor can continue sleeping.
+ * An action that puts a sleepable entity to sleep for a randomized duration.
  *
- * @author Esaam Matudin
- * @version 5.1
+ * This action handles the sleeping mechanic where a sleepable entity goes to sleep
+ * for a random number of turns (between 6 and 10 turns inclusive). The action
+ * manages the sleeping state and countdown, automatically waking the entity when
+ * the sleep duration is complete. This action continues automatically until the
+ * sleep period ends.
+ *
+ * Based on the SleepAction class from the FIT2099 demo project.
+ *
+ * @author Adrian Kristanto (original implementation)
+ * @author Taabish Farooq Bhat
+ * @version 1.0
  */
 public class SleepAction extends Action {
 
-    /** The sleepable source. */
-    private final Sleepable source;
+    private final Sleepable sleepable;
+    private int turnsLeft;
+    private boolean started = false;
 
     /**
-     * Constructor.
+     * Constructor for creating a SleepAction with randomized duration.
      *
-     * @param source the sleepable source
+     * The sleep duration is randomly determined to be between 6 and 10 turns
+     * (inclusive) when the action is created.
+     *
+     * @param sleepable the Sleepable entity that will go to sleep
      */
-    public SleepAction(Sleepable source) {
-        this.source = source;
+    public SleepAction(Sleepable sleepable) {
+        this.sleepable = sleepable;
+        this.turnsLeft = new Random().nextInt(5) + 6;
     }
 
     /**
-     * Executes the sleeping action by the given actor.
+     * Executes the sleep action for one turn.
      *
-     * @param actor the actor performing the action
-     * @param map   the current game map
-     * @return a string describing the result of sleeping
+     * On the first execution, sets the sleepable entity to sleeping state.
+     * Each subsequent execution decrements the remaining sleep turns.
+     * When no turns remain, the entity is awakened and a wake-up message
+     * is returned.
+     *
+     * @param actor the Actor associated with this action
+     * @param map the GameMap where the action takes place
+     * @return a String describing the current sleep status or wake-up message
      */
     @Override
     public String execute(Actor actor, GameMap map) {
-        return source.sleptBy(actor);
+        if (!started) {
+            sleepable.setSleeping(true);
+            started = true;
+        }
+
+        turnsLeft--;
+
+        if (turnsLeft < 0) {
+            sleepable.setSleeping(false);
+            return sleepable + " wakes up feeling rested.";
+        }
+
+        return sleepable + " is sleeping... (" + turnsLeft + " turns left)";
     }
 
     /**
-     * Returns a description of this action for the menu.
+     * Returns a description of this action suitable for display in a menu.
      *
-     * @param actor the actor performing the action
-     * @return a string describing the sleeping action
+     * @param actor the Actor who would perform this action
+     * @return a String describing the sleep action with remaining turn count
      */
     @Override
     public String menuDescription(Actor actor) {
-        return actor + " sleeps on " + source.getClass().getSimpleName();
+        return "Explorer goes to sleep for " + turnsLeft + " turns ";
     }
 
     /**
-     * Returns the next action if the actor can continue sleeping.
+     * Returns the next action to be executed automatically.
      *
-     * @return this action if sleeping can continue, otherwise null
+     * This method allows the sleep action to continue automatically each turn
+     * until the sleep duration is complete. Returns this action if there are
+     * still turns remaining, or null when the sleep is finished.
+     *
+     * @return this SleepAction if sleep continues, null if sleep is complete
      */
     @Override
     public Action getNextAction() {
-        return source.canContinueSleep() ? this : null;
+        return (turnsLeft > 0) ? this : null;
     }
 }

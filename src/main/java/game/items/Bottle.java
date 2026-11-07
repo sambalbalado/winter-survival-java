@@ -2,73 +2,74 @@ package game.items;
 
 import edu.monash.fit2099.engine.actions.ActionList;
 import edu.monash.fit2099.engine.actors.Actor;
-import edu.monash.fit2099.engine.actors.attributes.ActorAttributeOperation;
 import edu.monash.fit2099.engine.items.Item;
 import edu.monash.fit2099.engine.positions.GameMap;
-import game.capabilities.Drinkable;
-import game.GameAttributes;
-import game.actions.DrinkAction;
+import game.actions.DrinkBottleAction;
+import game.app.Abilities;
 
 /**
- * A bottle that can be drunk by actors to restore hydration.
- * <p>
- * Each bottle has a limited number of uses. Drinking increases the actor's hydration.
- * </p>
+ * A bottle that contains water and can be consumed for hydration.
  *
- * @author Esaam Matudin
+ * @author Taabish Farooq Bhat
  * @version 1.0
  */
-public class Bottle extends Item implements Drinkable {
+public class Bottle extends Item {
+    private int sips = 5;
+    private Drinkable assignedDrinker;
 
-    /** Number of uses left for drinking */
-    private int uses = 5;
-
-    /***
-     * Constructor for a Bottle.
-     *
-     * @param name the name of this Item
-     * @param displayChar the character to represent this item on the ground
-     * @param portable true if and only if the Item can be picked up
+    /**
+     * Constructs a Bottle with 5 sips of water.
      */
-    public Bottle(String name, char displayChar, boolean portable) {
-        super(name, displayChar, portable);
-        this.enableAbility(Status.DRINK);
+    public Bottle() {
+        super("Bottle", 'o', true);
     }
 
     /**
-     * Returns a list of allowable actions for the actor carrying this item.
-     * Adds a DrinkAction if the bottle has remaining uses.
+     * Allows a drinkable actor to consume water from the bottle.
      *
-     * @param owner the actor that owns the item
-     * @param map the map where the actor is located
-     * @return an unmodifiable list of Actions
+     * @param drinkable the actor drinking from the bottle
+     * @return message describing the drink action
+     */
+    public String drunkBy(Drinkable drinkable) {
+        if (sips > 0) {
+            sips--;
+            drinkable.increaseHydration(4);
+            return drinkable + " drinks from the bottle. Hydration +4. Sips left: " + sips;
+        }
+        return "Bottle is empty!";
+    }
+
+    /**
+     * Sets the assigned drinker for this bottle.
+     *
+     * @param drinker the drinkable actor assigned to this bottle
+     */
+    public void setDrinker(Drinkable drinker) {
+        this.assignedDrinker = drinker;
+    }
+
+    /**
+     * Returns available actions for this bottle.
+     *
+     * @param owner the actor who owns the bottle
+     * @param map the game map
+     * @return list of allowable actions
      */
     @Override
     public ActionList allowableActions(Actor owner, GameMap map) {
-        ActionList actions = super.allowableActions(owner, map);
-
-        if (uses > 0) {
-            actions.add(new DrinkAction(this));
+        ActionList actions = new ActionList();
+        if (!isEmpty() && owner.hasAbility(Abilities.CAN_DRINK) && assignedDrinker != null) {
+            actions.add(new DrinkBottleAction(this, assignedDrinker));
         }
         return actions;
     }
 
     /**
-     * Performs drinking for the given actor.
-     * Decreases the number of uses and increases the actor's hydration.
+     * Checks if the bottle is empty.
      *
-     * @param actor the actor that drinks from the bottle
-     * @return a message indicating the result of drinking
+     * @return true if the bottle has no sips left, false otherwise
      */
-    @Override
-    public String drunkBy(Actor actor) {
-        if (uses > 0) {
-            int hydrationAdd = 4;
-            actor.modifyAttribute(GameAttributes.HYDRATION, ActorAttributeOperation.INCREASE, hydrationAdd);
-            uses--;
-            return actor + " drinks from " + this.getClass().getSimpleName() + " (" + uses + " uses left)";
-        } else {
-            return actor + " tries to drink, but the bottle is empty!";
-        }
+    public boolean isEmpty() {
+        return sips <= 0;
     }
 }
