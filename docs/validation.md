@@ -12,15 +12,16 @@ Validated on 7 November 2026. Maven 3.9.11 used Homebrew OpenJDK 25.0.1 to compi
 | Executable JAR | Manifest points to `game.app.Application` and lists nine runtime libraries under `dependency/`. |
 | Interactive smoke check | World/menu rendered; creative mode enabled; player transformed into Wolf; teleport cube exercised its malfunction path and then successfully moved the player to Plains (10,2). Process stopped with Ctrl+C. |
 | Service failure path | Startup continued with NORMAL phase when the HTTP service could not be reached. Unit tests also exercise unavailable/throwing service doubles. |
+| Runtime setup | Documented dependency-copy command passed and prepared all nine runtime libraries. |
 | Engine boundary | Existing engine files are unchanged. Team engine differences were comments/unused imports only. |
 
 Maven/Surefire emits a JVM deprecation warning in this environment. Test output also includes intentional error messages from service-failure tests; the XML reports have zero test errors.
 
-## Dependency-copy limitation
+## Runtime dependencies
 
-The first-use `maven-dependency-plugin:3.7.1:copy-dependencies` command could not run in this environment because the plugin was not cached and outbound DNS was unavailable. For the interactive smoke check, the nine exact libraries named by the JAR manifest were copied from the existing local Maven cache into `target/dependency/`. No libraries or build output are committed.
+The documented `maven-dependency-plugin:3.7.1:copy-dependencies -DincludeScope=runtime` command passed and prepared all nine runtime libraries listed in the executable JAR manifest. Keep `target/dependency/` beside the JAR. No libraries or build output are committed.
 
-The documented run command downloads/copies runtime libraries on a network-enabled machine. A clean-machine dependency download was not verified here. The build/test/package command itself passed offline using cached dependencies/plugins. Successful live astronomy data was not verified and is not required for the fallback game.
+The build/test/package check used cached dependencies/plugins; the dependency-copy step was also verified through the normal local Maven environment. A completely empty-cache machine was not tested. Successful live astronomy data was not verified and is not required for the fallback game.
 
 ## Known limitations
 

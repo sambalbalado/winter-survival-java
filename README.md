@@ -59,7 +59,7 @@ Enter the displayed key followed by Return. Movement uses 8 north, 2 south, 4 we
 
 `mvn clean verify` runs **117 tests**: 109 imported team tests and eight adapted regression checks retained from the earlier portfolio. The two original flora test classes account for 35 methods. Sources are under `src/test/java/game/`. Unit tests use service test doubles rather than live HTTP calls.
 
-See [validation notes](docs/validation.md) for local results, runtime checks, the dependency-copy limitation, and remaining issues.
+See [validation notes](docs/validation.md) for local results, runtime checks, runtime dependency setup, and remaining issues.
 
 ## Structure and design
 
