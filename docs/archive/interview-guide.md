@@ -25,92 +25,92 @@ The entry point creates an `Earth` world containing a 40-by-10 snow map, a playe
 
 ### `Application`
 
-**PURPOSE:** Program entry point.  
-**RESPONSIBILITY:** Create the display, show the title, construct the world, and start the loop.  
-**INTERACTS WITH:** `Display`, `Earth`, `FancyMessage`.  
-**WHY IT EXISTS:** Keeps startup concerns separate from world configuration and gameplay.  
-**IMPORTANT METHODS:** `main`.  
+**PURPOSE:** Program entry point.\
+**RESPONSIBILITY:** Create the display, show the title, construct the world, and start the loop.\
+**INTERACTS WITH:** `Display`, `Earth`, `FancyMessage`.\
+**WHY IT EXISTS:** Keeps startup concerns separate from world configuration and gameplay.\
+**IMPORTANT METHODS:** `main`.\
 **SOFTWARE ENGINEERING CONCEPT:** Composition root / dependency construction.
 
 ### `Earth`
 
-**PURPOSE:** Concrete game-world configuration.  
-**RESPONSIBILITY:** Create the map and place actors and trees.  
-**INTERACTS WITH:** `World`, `GameMap`, `DefaultGroundCreator`, all initial actors and trees.  
-**WHY IT EXISTS:** Separates reusable engine flow from this game's concrete content.  
-**IMPORTANT METHODS:** `constructWorld`.  
+**PURPOSE:** Concrete game-world configuration.\
+**RESPONSIBILITY:** Create the map and place actors and trees.\
+**INTERACTS WITH:** `World`, `GameMap`, `DefaultGroundCreator`, all initial actors and trees.\
+**WHY IT EXISTS:** Separates reusable engine flow from this game's concrete content.\
+**IMPORTANT METHODS:** `constructWorld`.\
 **SOFTWARE ENGINEERING CONCEPT:** Inheritance used as a framework extension point.
 
 ### `Player`
 
-**PURPOSE:** Human-controlled survival actor.  
-**RESPONSIBILITY:** Initialise player abilities, attributes, equipment, display statistics, and select menu actions.  
-**INTERACTS WITH:** `Actor`, `Menu`, `GameAttributes`, `Bedroll`, `Bottle`.  
-**WHY IT EXISTS:** Adds game-specific survival rules to the generic actor abstraction.  
-**IMPORTANT METHODS:** `playTurn`, `isConscious`, `displayStats`, `updateTurn`.  
+**PURPOSE:** Human-controlled survival actor.\
+**RESPONSIBILITY:** Initialise player abilities, attributes, equipment, display statistics, and select menu actions.\
+**INTERACTS WITH:** `Actor`, `Menu`, `GameAttributes`, `Bedroll`, `Bottle`.\
+**WHY IT EXISTS:** Adds game-specific survival rules to the generic actor abstraction.\
+**IMPORTANT METHODS:** `playTurn`, `isConscious`, `displayStats`, `updateTurn`.\
 **SOFTWARE ENGINEERING CONCEPT:** Polymorphic actor lifecycle and encapsulated state.
 
 ### `Bear`, `Wolf`, and `Deer`
 
-**PURPOSE:** Wildlife and potential companions.  
-**RESPONSIBILITY:** Hold taming state, choose an action from behaviours, and expose contextual interactions to other actors.  
-**INTERACTS WITH:** `Tamable`, `Behaviour`, `AttackAction`, `TameAction`, intrinsic weapons.  
-**WHY THEY EXIST:** Give each animal a distinct configuration while sharing engine and capability contracts.  
-**IMPORTANT METHODS:** `playTurn`, `allowableActions`, `tame`, `isTamed`, `getOwner`.  
+**PURPOSE:** Wildlife and potential companions.\
+**RESPONSIBILITY:** Hold taming state, choose an action from behaviours, and expose contextual interactions to other actors.\
+**INTERACTS WITH:** `Tamable`, `Behaviour`, `AttackAction`, `TameAction`, intrinsic weapons.\
+**WHY THEY EXIST:** Give each animal a distinct configuration while sharing engine and capability contracts.\
+**IMPORTANT METHODS:** `playTurn`, `allowableActions`, `tame`, `isTamed`, `getOwner`.\
 **SOFTWARE ENGINEERING CONCEPT:** Inheritance from `Actor`, interface realisation, and behaviour composition.
 
 ### `Tamable`
 
-**PURPOSE:** Contract for any animal that can acquire an owner.  
-**RESPONSIBILITY:** Expose the taming transition and ownership query.  
-**INTERACTS WITH:** `TameAction`, `FollowBehaviour`, `ProtectOwnerBehaviour`, `CollectFoodBehaviour`.  
-**WHY IT EXISTS:** Prevents actions and behaviours from depending on `Bear`, `Wolf`, or `Deer` directly.  
-**IMPORTANT METHODS:** `tame`, `isTamed`, `getOwner`.  
+**PURPOSE:** Contract for any animal that can acquire an owner.\
+**RESPONSIBILITY:** Expose the taming transition and ownership query.\
+**INTERACTS WITH:** `TameAction`, `FollowBehaviour`, `ProtectOwnerBehaviour`, `CollectFoodBehaviour`.\
+**WHY IT EXISTS:** Prevents actions and behaviours from depending on `Bear`, `Wolf`, or `Deer` directly.\
+**IMPORTANT METHODS:** `tame`, `isTamed`, `getOwner`.\
 **SOFTWARE ENGINEERING CONCEPT:** Abstraction, polymorphism, and dependency inversion.
 
 ### `Action` and game actions
 
-**PURPOSE:** Represent a possible decision as an object.  
-**RESPONSIBILITY:** Execute one domain operation and describe it to the menu.  
-**INTERACTS WITH:** `Actor`, `GameMap`, and a narrow capability such as `Eatable` or `Tamable`.  
-**WHY IT EXISTS:** Lets the world assemble context-specific commands without hard-coding every operation into the loop.  
-**IMPORTANT METHODS:** `execute`, `menuDescription`, `getNextAction`.  
+**PURPOSE:** Represent a possible decision as an object.\
+**RESPONSIBILITY:** Execute one domain operation and describe it to the menu.\
+**INTERACTS WITH:** `Actor`, `GameMap`, and a narrow capability such as `Eatable` or `Tamable`.\
+**WHY IT EXISTS:** Lets the world assemble context-specific commands without hard-coding every operation into the loop.\
+**IMPORTANT METHODS:** `execute`, `menuDescription`, `getNextAction`.\
 **SOFTWARE ENGINEERING CONCEPT:** Command pattern and runtime polymorphism.
 
 ### `Behaviour` and game behaviours
 
-**PURPOSE:** Reusable NPC decision policies.  
-**RESPONSIBILITY:** Inspect actor/world state and return one useful action, or `null` when inapplicable.  
-**INTERACTS WITH:** `Actor`, `GameMap`, `Tamable`, and action classes.  
-**WHY IT EXISTS:** Avoids monolithic AI methods and permits different animals to reuse the same decision logic.  
-**IMPORTANT METHODS:** `generateAction`.  
+**PURPOSE:** Reusable NPC decision policies.\
+**RESPONSIBILITY:** Inspect actor/world state and return one useful action, or `null` when inapplicable.\
+**INTERACTS WITH:** `Actor`, `GameMap`, `Tamable`, and action classes.\
+**WHY IT EXISTS:** Avoids monolithic AI methods and permits different animals to reuse the same decision logic.\
+**IMPORTANT METHODS:** `generateAction`.\
 **SOFTWARE ENGINEERING CONCEPT:** Strategy pattern and composition over inheritance.
 
 ### `Apple`, `Hazelnut`, and `YewBerry`
 
-**PURPOSE:** Concrete food items with distinct outcomes.  
-**RESPONSIBILITY:** Advertise the food ability, expose `EatAction`, and apply their effect when eaten.  
-**INTERACTS WITH:** `Item`, `Eatable`, `EatAction`, actor attributes.  
-**WHY THEY EXIST:** Keep each consumable's effect close to the item instead of building a type switch in `EatAction`.  
-**IMPORTANT METHODS:** `allowableActions`, `eatenBy`.  
+**PURPOSE:** Concrete food items with distinct outcomes.\
+**RESPONSIBILITY:** Advertise the food ability, expose `EatAction`, and apply their effect when eaten.\
+**INTERACTS WITH:** `Item`, `Eatable`, `EatAction`, actor attributes.\
+**WHY THEY EXIST:** Keep each consumable's effect close to the item instead of building a type switch in `EatAction`.\
+**IMPORTANT METHODS:** `allowableActions`, `eatenBy`.\
 **SOFTWARE ENGINEERING CONCEPT:** Interface-based polymorphism and Open/Closed Principle.
 
 ### `AppleTree`, `HazelnutTree`, and `YewBerryTree`
 
-**PURPOSE:** Renewable world-resource producers.  
-**RESPONSIBILITY:** Count turns and place one resource on a random passable adjacent tile at the configured interval.  
-**INTERACTS WITH:** `Ground`, `Location`, `Exit`, and the corresponding food item.  
-**WHY THEY EXIST:** Model resource generation as terrain lifecycle behaviour.  
-**IMPORTANT METHODS:** `tick` and the private drop method.  
+**PURPOSE:** Renewable world-resource producers.\
+**RESPONSIBILITY:** Count turns and place one resource on a random passable adjacent tile at the configured interval.\
+**INTERACTS WITH:** `Ground`, `Location`, `Exit`, and the corresponding food item.\
+**WHY THEY EXIST:** Model resource generation as terrain lifecycle behaviour.\
+**IMPORTANT METHODS:** `tick` and the private drop method.\
 **SOFTWARE ENGINEERING CONCEPT:** Framework callback override and domain modelling.
 
 ### `World` (supplied engine)
 
-**PURPOSE:** Coordinate the whole turn-based simulation.  
-**RESPONSIBILITY:** Tick maps, draw the active map, build action lists, process actors, and decide when the game ends.  
-**INTERACTS WITH:** `GameMap`, `Actor`, `Action`, `Location`, `Item`, `Display`.  
-**WHY IT EXISTS:** Centralises orchestration while delegating domain behaviour to polymorphic objects.  
-**IMPORTANT METHODS:** `run`, `gameLoop`, `processActorTurn`, `prepareAllowableActions`.  
+**PURPOSE:** Coordinate the whole turn-based simulation.\
+**RESPONSIBILITY:** Tick maps, draw the active map, build action lists, process actors, and decide when the game ends.\
+**INTERACTS WITH:** `GameMap`, `Actor`, `Action`, `Location`, `Item`, `Display`.\
+**WHY IT EXISTS:** Centralises orchestration while delegating domain behaviour to polymorphic objects.\
+**IMPORTANT METHODS:** `run`, `gameLoop`, `processActorTurn`, `prepareAllowableActions`.\
 **SOFTWARE ENGINEERING CONCEPT:** Framework orchestration; supplied code, not claimed as original implementation.
 
 ## Where core OOP concepts appear
